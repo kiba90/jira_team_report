@@ -80,6 +80,3 @@ class VelocityInfo(JIRA):
             result_list.append(sprints)
         return result_list
 
-
-class FlowEfficiency:
-    pass
