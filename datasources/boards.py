@@ -10,5 +10,7 @@ BOARD_LIST = {
     'ZFIN': 402,
     'WULC': 405,
     'RCD': 386,
-    'SCR': 109
+    'SCR': 109,
+    'RID': 12,
+    'RBC': 409
 }

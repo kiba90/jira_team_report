@@ -72,15 +72,14 @@ class VelocityInfo(JIRA):
                     sprints['commitment'] = data.velocityStatEntries[velocity]['estimated']['value']
                     sprints['completed'] = data.velocityStatEntries[velocity]['completed']['value']
 
-            if sprints['name'][:3] in sprints['project_key']:
-                duration = self.sprint_duration_info(sprint_id)
-                sprints['start_at'] = string2datetime(duration['start_at'])
-                sprints['end_at'] = string2datetime(duration['end_at'])
-
-            elif sprints['name'][:2] in sprints['project_key']:
+            if sprints['name'][:len(sprints['project_key'])] in sprints['project_key']:
                 duration = self.sprint_duration_info(sprint_id)
                 sprints['start_at'] = string2datetime(duration['start_at'])
                 sprints['end_at'] = string2datetime(duration['end_at'])
 
             result_list.append(sprints)
         return result_list
+
+
+class FlowEfficiency:
+    pass

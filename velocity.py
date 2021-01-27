@@ -13,10 +13,10 @@ def make_velocity_report():
     for board in boards.BOARD_LIST.values():
         data = v.velocity_stat_entries(board)
         for item in data:
-            if item['project_key'] in item['name'][:3]:
+
+            if item['project_key'] in item['name'][:len(item['project_key'])]:
                 Velocity.create_new_report(item)
-            elif item['project_key'] in item['name'][:2]:
-                Velocity.create_new_report(item)
+
             else:
                 logging.info('Wrong sprint item in project ' + item['project_key'] +
                              ' sprint_id: ' + str(item['sprint_id']) +
