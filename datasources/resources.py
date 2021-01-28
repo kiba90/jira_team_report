@@ -21,6 +21,9 @@ def get_project_by_board_id(board_list, board_id):
         if value == board_id:
             return key
 
+def timedelta_to_seconds():
+    pass
+
 
 class VelocityInfo(JIRA):
 
@@ -79,4 +82,20 @@ class VelocityInfo(JIRA):
 
             result_list.append(sprints)
         return result_list
+
+
+class FlowEfficiency(JIRA):
+
+    def __init__(self, options=None, basic_auth=None):
+        JIRA.__init__(self, options=JiraConfig.JIRA_OPTIONS, basic_auth=(JiraConfig.LOGIN, JiraConfig.PASS))
+
+    def work_stats(self):
+        jql = 'project = ZES and sprint = 447'
+        issue_list = self.search_issues(jql_str=jql, expand='Worklog')
+        total_time = 0
+        for key in issue_list:
+            worklogs = self.worklogs(key)
+            for worklog in worklogs:
+                print(worklog.timeSpent)
+
 
