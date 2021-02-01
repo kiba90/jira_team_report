@@ -25,5 +25,5 @@ def make_velocity_report():
     return
 
 
-t = resources.FlowEfficiency(JIRA)
-print(t.work_stats())
+def work_stats():
+    pass
