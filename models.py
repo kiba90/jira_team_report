@@ -39,7 +39,7 @@ class Velocity(db.Model):
             logging.info('Nothing changed, sprint_id: ' + str(data['sprint_id']) + ' already exist')
 
 
-class FlowEfficiency(db.Model):
+class Worklog(db.Model):
 
     __tablename__ = 'jira_work_stat'
     id = Column(db.Integer, primary_key=True)
@@ -47,6 +47,17 @@ class FlowEfficiency(db.Model):
     sprint_id = db.Column(db.Integer, db.ForeignKey('jira_velocity.sprint_id'), nullable=False)
     worklog = Column(db.INTEGER, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    @staticmethod
+    def create_new_worklog(data):
+        exists = db.session.query(Worklog.sprint_id).filter_by(sprint_id=data['sprint_id']).scalar() is not None
+        if not exists:
+            worklog = Worklog(**data)
+            db.session.add(worklog)
+            logging.info('Create a new worklog data for sprint: ' + str(worklog.sprint_id))
+            db.session.commit()
+        else:
+            logging.info('Nothing changed')
 
 
 class Projects(db.Model):

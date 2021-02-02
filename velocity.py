@@ -1,9 +1,12 @@
 from jira import JIRA
 from datasources import resources
 from models import Velocity
+from models import Projects
+from models import Worklog
 from config import LOGGER_FORMAT
 from datasources import boards
 import logging
+from appvars import db
 
 logging.basicConfig(format=LOGGER_FORMAT, level=logging.DEBUG)
 
@@ -25,5 +28,19 @@ def make_velocity_report():
     return
 
 
-def work_stats():
-    pass
+def worklog_stats():
+    """
+    Getting worklog stats of completed issues in sprint
+    :return: total worklog of completed issues
+    """
+    fl = resources.FlowEfficiency(JIRA)
+    for project, board in boards.BOARD_LIST.items():
+        sprint_list = db.session.query(Velocity).join(Projects).filter(Projects.project_key == project).all()
+        for sprint in sprint_list:
+            worklog = fl.completed_issue(board, sprint.sprint_id)
+            logged_time_stat = {
+                'project_id': sprint.project_id,
+                'sprint_id': sprint.sprint_id,
+                'worklog': worklog
+            }
+            Worklog.create_new_worklog(logged_time_stat)
