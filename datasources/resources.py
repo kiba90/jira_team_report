@@ -47,7 +47,7 @@ class VelocityInfo(JIRA):
             'sprint_id': result.raw['id'],
             'name': result.raw['name'],
             'start_at': result.raw['startDate'],
-            'end_at': result.raw['endDate']
+            'end_at': result.raw['completeDate']
         }
         return sprint_durations
 
