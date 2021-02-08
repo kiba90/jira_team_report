@@ -1,8 +1,8 @@
 from flask_script import Manager
 from flask_migrate import MigrateCommand
 from appvars import app
-from velocity import make_velocity_report
-from velocity import worklog_stats
+from reports import make_velocity_report
+from reports import worklog_stats
 
 app.config.from_object("config.Config")
 

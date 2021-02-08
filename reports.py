@@ -7,6 +7,7 @@ from config import LOGGER_FORMAT
 from datasources import boards
 import logging
 from appvars import db
+from sqlalchemy import text
 
 logging.basicConfig(format=LOGGER_FORMAT, level=logging.DEBUG)
 
@@ -35,12 +36,19 @@ def worklog_stats():
     """
     fl = resources.FlowEfficiency(JIRA)
     for project, board in boards.BOARD_LIST.items():
-        sprint_list = db.session.query(Velocity).join(Projects).filter(Projects.project_key == project).all()
+        sprint_list = db.session.query(Velocity).join(Projects).filter(Projects.project_key == project, text("NOT EXISTS(SELECT jws.sprint_id from jira_work_stat jws WHERE jws.sprint_id = jira_velocity.sprint_id)")).all()
         for sprint in sprint_list:
-            worklog = fl.completed_issue(board, sprint.sprint_id)
             logged_time_stat = {
                 'project_id': sprint.project_id,
-                'sprint_id': sprint.sprint_id,
-                'worklog': worklog
+                'sprint_id': sprint.sprint_id
             }
+            sprint_report = fl.get_sprint_report(board, sprint.sprint_id)
+            for report in sprint_report['contents']:
+                if report == 'completedIssues':
+                    completed_worklog = fl.calculate_worklog(sprint_report['contents']['completedIssues'], sprint_report['sprint'])
+                    logged_time_stat['completed_worklog'] = completed_worklog
+                if report == 'issuesNotCompletedInCurrentSprint':
+                    not_completed_worklog = fl.calculate_worklog(sprint_report['contents']['issuesNotCompletedInCurrentSprint'], sprint_report['sprint'])
+                    logged_time_stat['not_completed_worklog'] = not_completed_worklog
+
             Worklog.create_new_worklog(logged_time_stat)

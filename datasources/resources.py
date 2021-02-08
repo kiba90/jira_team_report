@@ -88,25 +88,28 @@ class FlowEfficiency(JIRA):
         JIRA.__init__(self, options=JiraConfig.JIRA_OPTIONS, basic_auth=(JiraConfig.LOGIN, JiraConfig.PASS))
 
     def get_sprint_report(self, board_id, sprint_id):
+        """
+        :param board_id: id of scrum board in jira
+        :param sprint_id: id of sprint in jira
+        :return:
+        """
         return self._get_json('rapid/charts/sprintreport?rapidViewId=%s&sprintId=%s' % (board_id, sprint_id),
                                   base=JIRA.AGILE_BASE_URL)
 
-    def completed_issue(self, board_id, sprint_id):
+    def calculate_worklog(self, report, sprint_info):
         """
         Calculating worklog time of completed issues during a sprint
-        :param board_id:
-        :param sprint_id:
+        :param report:
+        :param sprint_info:
         :return: Total logged time of completed issues. type: int
         """
         total_time = 0
-        report = self.get_sprint_report(board_id, sprint_id)
-        for issue in report['contents']['completedIssues']:
+        for issue in report:
             worklogs = self.worklogs(issue['key'])
             for worklog in worklogs:
                 w_time = parse(worklog.created)
-                s_start_time = parse(report['sprint']['startDate'])
-                s_end_time = parse(report['sprint']['endDate'])
+                s_start_time = parse(sprint_info['startDate'])
+                s_end_time = parse(sprint_info['endDate'])
                 if s_start_time.date() <= w_time.date() <= s_end_time.date():
                     total_time += worklog.timeSpentSeconds
         return total_time
-

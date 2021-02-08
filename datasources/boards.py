@@ -12,5 +12,7 @@ BOARD_LIST = {
     'RCD': 386,
     'SCR': 109,
     'RID': 12,
-    'RBC': 409
+    'RBC': 409,
+    'SLRU': 415,
+    'FD': 413
 }
