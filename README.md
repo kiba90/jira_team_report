@@ -42,7 +42,11 @@ Because all search based on scrum board id
 
 # Usage
 
-The following command updates the data in the project database.
+The following command updates the velocity data in the project database.
 ```
 python manage.py update_velocity_data
+```
+The following command updates the worklog data in the project database.
+```
+python manage.py update_worklog_data
 ```
