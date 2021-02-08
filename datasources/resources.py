@@ -3,6 +3,7 @@ from jira import JIRA
 import datetime
 from config import JiraConfig
 from datasources import boards
+from dateutil.parser import parse
 
 DATE_FORMAT = '%d/%b/%y %H:%M %p'
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -46,7 +47,7 @@ class VelocityInfo(JIRA):
             'sprint_id': result.raw['id'],
             'name': result.raw['name'],
             'start_at': result.raw['startDate'],
-            'end_at': result.raw['endDate']
+            'end_at': result.raw['completeDate']
         }
         return sprint_durations
 
@@ -80,3 +81,35 @@ class VelocityInfo(JIRA):
             result_list.append(sprints)
         return result_list
 
+
+class FlowEfficiency(JIRA):
+
+    def __init__(self, options=None, basic_auth=None):
+        JIRA.__init__(self, options=JiraConfig.JIRA_OPTIONS, basic_auth=(JiraConfig.LOGIN, JiraConfig.PASS))
+
+    def get_sprint_report(self, board_id, sprint_id):
+        """
+        :param board_id: id of scrum board in jira
+        :param sprint_id: id of sprint in jira
+        :return:
+        """
+        return self._get_json('rapid/charts/sprintreport?rapidViewId=%s&sprintId=%s' % (board_id, sprint_id),
+                                  base=JIRA.AGILE_BASE_URL)
+
+    def calculate_worklog(self, report, sprint_info):
+        """
+        Calculating worklog time of completed issues during a sprint
+        :param report:
+        :param sprint_info:
+        :return: Total logged time of completed issues. type: int
+        """
+        total_time = 0
+        for issue in report:
+            worklogs = self.worklogs(issue['key'])
+            for worklog in worklogs:
+                w_time = parse(worklog.created)
+                s_start_time = parse(sprint_info['startDate'])
+                s_end_time = parse(sprint_info['endDate'])
+                if s_start_time.date() <= w_time.date() <= s_end_time.date():
+                    total_time += worklog.timeSpentSeconds
+        return total_time
