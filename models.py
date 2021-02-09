@@ -3,6 +3,7 @@ from config import LOGGER_FORMAT
 from appvars import db
 from sqlalchemy import Column
 from datetime import datetime
+from datasources import boards
 
 logging.basicConfig(format=LOGGER_FORMAT, level=logging.DEBUG)
 
@@ -28,7 +29,9 @@ class Velocity(db.Model):
         :param data: dict
         :return:
         """
+        # Update project_key, get Project instance
         data['project_key'] = Projects.query.filter_by(project_key=data['project_key']).first()
+
         exists = db.session.query(Velocity.sprint_id).filter_by(sprint_id=data['sprint_id']).scalar() is not None
         if not exists:
             report = Velocity(**data)
@@ -40,7 +43,6 @@ class Velocity(db.Model):
 
 
 class Worklog(db.Model):
-
     __tablename__ = 'jira_work_stat'
     id = Column(db.Integer, primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey('jira_projects.id'), nullable=False)
@@ -66,3 +68,14 @@ class Projects(db.Model):
     id = Column(db.Integer, primary_key=True)
     project_key = Column(db.VARCHAR(length=256), nullable=False, unique=True)
 
+    @staticmethod
+    def check_projects():
+        for key in boards.BOARD_LIST:
+            exists = db.session.query(Projects.project_key).filter_by(project_key=key).scalar() is not None
+            if not exists:
+                project = Projects(project_key=key)
+                db.session.add(project)
+                logging.info('Add project' + project.project_key)
+                db.session.commit()
+            else:
+                logging.info('Nothing changed')

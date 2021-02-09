@@ -1,3 +1,4 @@
+# The list if project key wint scrum board id
 BOARD_LIST = {
     'ZRU': 377,
     'ZES': 375,
