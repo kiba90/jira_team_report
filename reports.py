@@ -43,9 +43,11 @@ def worklog_stats():
         sprint_list = db.session.query(models.Velocity).join(models.Projects).filter(models.Projects.project_key == project, text("NOT EXISTS(SELECT jws.sprint_id from jira_work_stat jws WHERE jws.sprint_id = jira_velocity.sprint_id)")).all()
 
         for sprint in sprint_list:
-            logged_time_stat = {
+            dev_count = fl.dev_count(project, sprint.sprint_id)
+            dev_worklog_stats = {
                 'project_id': sprint.project_id,
-                'sprint_id': sprint.sprint_id
+                'sprint_id': sprint.sprint_id,
+                'dev_count': dev_count
             }
 
             # Getting full sprint report
@@ -55,11 +57,11 @@ def worklog_stats():
 
                 if report == 'completedIssues':
                     completed_worklog = fl.calculate_worklog(sprint_report['contents']['completedIssues'], sprint_report['sprint'])
-                    logged_time_stat['completed_worklog'] = completed_worklog
+                    dev_worklog_stats['completed_worklog'] = completed_worklog
 
                 if report == 'issuesNotCompletedInCurrentSprint':
                     not_completed_worklog = fl.calculate_worklog(sprint_report['contents']['issuesNotCompletedInCurrentSprint'], sprint_report['sprint'])
-                    logged_time_stat['not_completed_worklog'] = not_completed_worklog
+                    dev_worklog_stats['not_completed_worklog'] = not_completed_worklog
 
-            models.Worklog.create_new_worklog(logged_time_stat)
+            models.Worklog.create_new_worklog(dev_worklog_stats)
 

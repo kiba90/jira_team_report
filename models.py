@@ -49,6 +49,7 @@ class Worklog(db.Model):
     sprint_id = db.Column(db.Integer, db.ForeignKey('jira_velocity.sprint_id'), nullable=False)
     completed_worklog = Column(db.INTEGER, nullable=True)
     not_completed_worklog = Column(db.INTEGER, nullable=True)
+    dev_count = Column(db.INTEGER, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     @staticmethod

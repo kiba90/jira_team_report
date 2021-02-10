@@ -83,7 +83,7 @@ class VelocityInfo(JIRA):
             for velocity in data.velocityStatEntries:
                 if int(velocity) == sprint['id']:
 
-                    #Sum of original time estimation in commitment / completed in seconds
+                    # Sum of original time estimation in commitment / completed in seconds
                     sprints['commitment'] = data.velocityStatEntries[velocity]['estimated']['value']
                     sprints['completed'] = data.velocityStatEntries[velocity]['completed']['value']
 
@@ -100,9 +100,10 @@ class VelocityInfo(JIRA):
 class FlowEfficiency(JIRA):
     """
     Getting sprint report with completed / not completed issues and calculating worklog
-    -- function get_sprint_report() - getting full jira sprint report
-    -- function calculate_worklog() - calculating worklog time in seconds for all task in sprint
-    """
+    -- method get_sprint_report() - getting full jira sprint report
+    -- method calculate_worklog() - calculating worklog time in seconds for all task in sprint
+    -- method dev_count() - calculating number of developers in the sprint
+     """
 
     def __init__(self, options=None, basic_auth=None):
         JIRA.__init__(self, options=JiraConfig.JIRA_OPTIONS, basic_auth=(JiraConfig.LOGIN, JiraConfig.PASS))
@@ -115,7 +116,23 @@ class FlowEfficiency(JIRA):
         :return:
         """
         return self._get_json('rapid/charts/sprintreport?rapidViewId=%s&sprintId=%s' % (board_id, sprint_id),
-                                  base=JIRA.AGILE_BASE_URL)
+                              base=JIRA.AGILE_BASE_URL)
+
+    def dev_count(self, project_key, sprint_id):
+        """
+        Count of unique developers(assignee) in the sprint.
+        :param project_key: str
+        :param sprint_id: int
+        :return: count: int
+        """
+        issue_list = self.search_issues(jql_str='project = ' + project_key + ' and sprint = ' + str(sprint_id))
+        dev = []
+        for issue in issue_list:
+            try:
+                dev.append(issue.fields.assignee.key)
+            except AttributeError:
+                pass
+        return len(set(dev))
 
     def calculate_worklog(self, report, sprint_info):
         """
@@ -139,5 +156,3 @@ class FlowEfficiency(JIRA):
                 if s_start_time.date() <= w_time.date() <= s_end_time.date():
                     total_time += worklog.timeSpentSeconds
         return total_time
-
-
